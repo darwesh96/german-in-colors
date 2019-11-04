@@ -1,0 +1,20 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+                  <item name="colorPrimaryDark">@color/darkpurple</item>
+
+    </style>
+
+  <!-- The launcher theme. It sets the main window background to the launch_screen drawable -->
+  <style name="AppTheme.Launcher" parent="Theme.AppCompat.Light.NoActionBar">
+                  <item name="colorPrimaryDark">@color/darkpurple</item>
+
+        <item name="android:windowBackground">@drawable/background_splash</item>
+    <!-- Optional, on Android 5+ you can modify the colorPrimaryDark color to match the windowBackground color for further branding-->
+    <!-- <item name="colorPrimaryDark">@android:color/white</item> -->
+  </style>
+   
+     
+</resources>
