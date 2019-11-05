@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import {
     View, ScrollView, Text, FlatList, Dimensions, StyleSheet,
-    TouchableOpacity, TouchableHighlight, Alert,ToastAndroid
+    TouchableOpacity, TouchableHighlight, Alert, ToastAndroid
 } from 'react-native';
 import { queryAllWords, deleteWord } from "../realm/Realm";
 import Modal from "react-native-modal";
@@ -18,29 +18,42 @@ export default class Dictionary extends Component {
             DasList: [],
             DerList: [],
             isModalVisible: false,
+            text: '',
             translation: '',
-            id:0,
-            type:''
-
-          
+            id: 0,
+            type: '',
+            width: Dimensions.get('window').width, // devices width for responsive and orientation layouts
         }
     }
+
+    /**
+     * This method is fired immediately once the layout has been calculated or changed.
+     * It is used here to re calculate the device width on orientation change for responsive design.
+     */
+    onLayout = () => {
+        // sets the new device width to the component state.
+        this.setState({
+            width: Dimensions.get('window').width,
+        })
+    }
+
     toggleModal = () => {
         this.setState({ isModalVisible: !this.state.isModalVisible });
     };
     handleDelete = () => {
-        deleteWord(this.state.id,this.state.type).then(
+        deleteWord(this.state.id, this.state.type).then(
             this.loadData(),
             ToastAndroid.show('Word Deleted !', ToastAndroid.SHORT)).catch((error) => {
                 alert(`Deleting word error ${error}`);
             });
     };
 
-    itemPress(item,type) {
+    itemPress(item, type) {
         this.setState({
-            translation:item.translation,
-            id:item.id,
-            type:type
+            text: item.name,
+            translation: item.translation,
+            id: item.id,
+            type: type
         });
         this.toggleModal();
         // Alert.alert('Word Info',
@@ -111,12 +124,12 @@ export default class Dictionary extends Component {
     static navigationOptions = {
         header: null,
     }
-   
+
     render() {
         const renderDer = ({ item, index }) => {
             return (
                 <TouchableOpacity key={index}
-                    onPress={() => { this.itemPress(item,'Der') }}>
+                    onPress={() => { this.itemPress(item, 'Der') }}>
                     <Text style={styles.cellDataDer} key={index}>{item.name}</Text>
                 </TouchableOpacity>
             );
@@ -124,7 +137,7 @@ export default class Dictionary extends Component {
         const renderDas = ({ item, index }) => {
             return (
                 <TouchableOpacity key={index}
-                    onPress={() => { this.itemPress(item,'Das') }}>
+                    onPress={() => { this.itemPress(item, 'Das') }}>
                     <Text style={styles.cellDataDas} key={index}>{item.name}</Text>
                 </TouchableOpacity>
             );
@@ -132,22 +145,23 @@ export default class Dictionary extends Component {
         const renderDie = ({ item, index }) => {
             return (
                 <TouchableOpacity key={index}
-                    onPress={() => { this.itemPress(item,'Die') }}>
+                    onPress={() => { this.itemPress(item, 'Die') }}>
                     <Text style={styles.cellDataDie}>{item.name}</Text>
                 </TouchableOpacity>
             );
         }
         return (
-            <View style={styles.mainContainer}>
-                <View style={styles.titleContainer}>
-                    <Text style={styles.cellTitleDer}>Der</Text>
-                    <Text style={styles.cellTitleDas}>Das</Text>
-                    <Text style={styles.cellTitleDie}>Die</Text>
+            <View style={[styles.mainContainer, { width: this.state.width }]}
+                onLayout={this.onLayout}>
+                <View style={[styles.titleContainer, { width: this.state.width }]}>
+                    <Text style={[styles.cellTitleDer, { width: this.state.width / 3 }]}>Der</Text>
+                    <Text style={[styles.cellTitleDas, { width: this.state.width / 3 }]}>Das</Text>
+                    <Text style={[styles.cellTitleDie, { width: this.state.width / 3 }]}>Die</Text>
 
                 </View>
-                <ScrollView contentContainerStyle={styles.container}>
+                <ScrollView contentContainerStyle={[styles.container, { width: this.state.width }]}>
 
-                    <View style={styles.cellHeaderDer}>
+                    <View style={[styles.cellHeaderDer, { width: this.state.width / 3 }]}>
                         <FlatList
                             contentContainerStyle={styles.list}
                             numColumns={1}
@@ -158,7 +172,7 @@ export default class Dictionary extends Component {
                         />
                     </View>
 
-                    <View style={styles.cellHeaderDas}>
+                    <View style={[styles.cellHeaderDas, { width: this.state.width / 3 }]}>
                         <FlatList
                             contentContainerStyle={styles.list}
                             numColumns={1}
@@ -169,7 +183,7 @@ export default class Dictionary extends Component {
                         />
                     </View>
 
-                    <View style={styles.cellHeaderDie}>
+                    <View style={[styles.cellHeaderDie, { width: this.state.width / 3 }]}>
                         <FlatList
                             contentContainerStyle={styles.list}
                             numColumns={1}
@@ -187,6 +201,7 @@ export default class Dictionary extends Component {
                     animationOut='zoomOutDown'
                     animationOutTiming={500}
                     deviceHeight={height * 1.5}
+                    deviceWidth={this.state.width}
                     onBackButtonPress={() => {
                         this.toggleModal()
                     }}
@@ -194,38 +209,52 @@ export default class Dictionary extends Component {
                         this.toggleModal()
                     }}
                 >
-                    <View style={{ justifyContent: 'center', alignItems: 'center', borderRadius: 20, backgroundColor: 'white' }}>
+                    <View style={{ justifyContent: 'center', alignItems: 'center', borderRadius: 20, backgroundColor: 'white', flexDirection: 'column' }}>
 
                         <View style={[styles.cardTitleContainer, { alignItems: 'center' }]}>
                             <Text style={styles.cardTitle}>Word Info</Text>
-                        </View>
-                        <View style={styles.row}>
+                            <View style={styles.row}>
                         <View style={styles.rowTitleContainer}>
-                            <Text style={styles.rowTitleText}> Translation </Text>
+                            <Text style={styles.rowTitleText}> Word </Text>
+                        </View>
+                        <View style={styles.cellLine}></View>
+                        <View style={styles.rowDataContainer}>
+                            <Text style={styles.rowDataText}> {this.state.text} </Text>
+                        </View>
+                    </View>                    
+                    <View style={[styles.rowLine, { width: this.state.width*0.75 }]}></View>
+
+                    <View style={styles.row}>
+                        <View style={styles.rowTitleContainer}>
+                            <Text style={styles.rowTitleText}>Translation</Text>
                         </View>
                         <View style={styles.cellLine}></View>
                         <View style={styles.rowDataContainer}>
                             <Text style={styles.rowDataText}> {this.state.translation} </Text>
                         </View>
-                    </View>       
+                    </View>
+                   
+
+                        </View>
                         <TouchableHighlight
-                            style={{ alignItems: 'center', justifyContent: 'center', width: 70, height: 30, borderRadius: 5, backgroundColor: '#001D63' }}
+                            style={{ alignItems: 'center', justifyContent: 'center', width: 70,
+                             height: 30, borderRadius: 5, backgroundColor: '#001D63', marginTop:20 }}
                             onPress={() => {
                                 this.toggleModal();
                                 Alert.alert(
                                     'Delete',
                                     'Are You sure you want to delete this word ?',
                                     [
-                                      {text: 'Ask me later', onPress: () => console.log('Ask me later pressed')},
-                                      {
-                                        text: 'Cancel',
-                                        onPress: () => console.log('Cancel Pressed'),
-                                        style: 'cancel',
-                                      },
-                                      {text: 'delete', onPress: () => this.handleDelete()},
+                                        { text: 'Ask me later', onPress: () => console.log('Ask me later pressed') },
+                                        {
+                                            text: 'Cancel',
+                                            onPress: () => console.log('Cancel Pressed'),
+                                            style: 'cancel',
+                                        },
+                                        { text: 'delete', onPress: () => this.handleDelete() },
                                     ],
-                                    
-                                  );
+
+                                );
                             }}>
                             <Text style={{ color: 'white' }}>Delete</Text>
                         </TouchableHighlight>
@@ -239,7 +268,7 @@ export default class Dictionary extends Component {
     }
 }
 
-const { width, height } = Dimensions.get('window');
+const { height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
     mainContainer: {
@@ -249,14 +278,12 @@ const styles = StyleSheet.create({
     container: {
         justifyContent: 'flex-start',
         alignContent: 'center',
-        width,
         flexDirection: 'row',
         flexGrow: 1,
         marginBottom: 50,
         paddingBottom: 50
     },
     titleContainer: {
-        width,
         flexDirection: 'row',
     },
     cellTitle: {
@@ -265,7 +292,6 @@ const styles = StyleSheet.create({
     },
     cellTitleDer: {
         padding: 20,
-        width: width / 3,
         elevation: 1,
         borderRadius: 2,
         backgroundColor: '#393fd4',
@@ -276,7 +302,6 @@ const styles = StyleSheet.create({
     },
     cellTitleDas: {
         padding: 20,
-        width: width / 3,
         elevation: 1,
         borderRadius: 2,
         backgroundColor: '#2d2c33',
@@ -288,7 +313,6 @@ const styles = StyleSheet.create({
     },
     cellTitleDie: {
         padding: 20,
-        width: width / 3,
         elevation: 1,
         borderRadius: 2,
         backgroundColor: '#bd2624',
@@ -299,7 +323,6 @@ const styles = StyleSheet.create({
 
     },
     cellHeaderDer: {
-        width: width / 3,
         justifyContent: 'flex-start',
         alignContent: 'center',
         borderRightWidth: 3,
@@ -308,7 +331,6 @@ const styles = StyleSheet.create({
         height: height * 0.79
     },
     cellHeaderDas: {
-        width: width / 3,
         justifyContent: 'flex-start',
         alignContent: 'center',
         borderRightWidth: 2,
@@ -317,7 +339,6 @@ const styles = StyleSheet.create({
 
     },
     cellHeaderDie: {
-        width: width / 3,
         justifyContent: 'flex-start',
         alignContent: 'center',
         height: height * 0.79
@@ -364,6 +385,7 @@ const styles = StyleSheet.create({
         paddingRight: 10,
         paddingLeft: 10,
         paddingBottom: 5,
+        marginBottom: 15,
     },
     cardRowContainer: {
         alignSelf: 'flex-end',
@@ -384,47 +406,44 @@ const styles = StyleSheet.create({
     },
     row: {
         flexDirection: 'row',
-        padding:50,
-        justifyContent:"flex-start"
+        paddingRight: 20,
+        paddingLeft: 20,
+        justifyContent: "flex-start"
     },
     rowTitleContainer: {
-        width: 100,
-        marginBottom: 5,
-        marginTop: 5,
-        marginRight: 5,
-        alignItems: 'center'
+        margin:10,
+        alignItems: 'flex-end'
     },
     rowTitleText: {
         color: '#7E8998',
         fontWeight: 'bold',
         fontSize: 16,
-        fontFamily: 'ISF kut'
+        fontFamily: 'ISF kut',
+        width: 100,
+        textAlign: 'right'
     },
     rowDataContainer: {
-        marginBottom: 10,
-        marginLeft: 15,
-        marginTop: 5,
-        marginRight: 5,
+       margin:10,
         width: '70%',
         alignItems: 'flex-start'
-    
+
     },
     rowDataText: {
         color: '#14254D'
     },
-    
+
     rowLine: {
         height: 1,
         width: 180,
         borderBottomWidth: 1,
-        marginRight: 20,
+        marginLeft: 60,
         borderColor: '#70707058',
-        alignSelf: 'flex-end'
-    
+        alignSelf: 'flex-start',
+
     },
     cellLine: {
         borderRightWidth: 1,
         borderColor: '#70707058'
-    
+
     },
 });

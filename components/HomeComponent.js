@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, TextInput, Button, ToastAndroid,Alert, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Button, ToastAndroid,Alert, ScrollView, Dimensions } from 'react-native';
 import RadioGroup from 'react-native-radio-buttons-group';
 import { insertNewWord } from "../realm/Realm";
 var Realm = require('realm');
@@ -11,17 +11,17 @@ export default class HomeComponent extends Component {
         this.state = {
             data: [
                 {
-                    label: 'Der',
+                    label: 'Der      ',
                     value: 'Der',
-                    color: 'blue'
+                    color: 'blue',
                 },
                 {
-                    label: 'Das',
+                    label: 'Das      ',
                     value: 'Das',
                     color: 'black'
                 },
                 {
-                    label: 'Die',
+                    label: 'Die      ',
                     value: 'Die',
                     color: 'red'
                 },
@@ -29,11 +29,23 @@ export default class HomeComponent extends Component {
             ],
             text: '',
             translation: '',
+            width: Dimensions.get('window').width, // devices width for responsive and orientation layouts
         };
     }
     static navigationOptions = {
         header: null,
     }
+
+     /**
+     * This method is fired immediately once the layout has been calculated or changed.
+     * It is used here to re calculate the device width on orientation change for responsive design.
+     */
+    onLayout = () => {
+        // sets the new device width to the component state.
+        this.setState({
+         width: Dimensions.get('window').width,
+        })
+       }
 
     onPress = data => this.setState({ data });
 
@@ -105,26 +117,23 @@ export default class HomeComponent extends Component {
         let selectedButton = this.state.data.find(e => e.selected == true);
         selectedButton = selectedButton ? selectedButton.value : this.state.data[0].label;
         return (
-            <ScrollView contentContainerStyle={styles.container}
+            <ScrollView contentContainerStyle={[styles.container, {width: this.state.width}]}
             keyboardShouldPersistTaps="handled"
+            onContentSizeChange={this.onLayout}
             >
 
                 <RadioGroup radioButtons={this.state.data} onPress={this.onPress}
                     flexDirection='row' />
-                {/* <Text style={styles.valueText}>
-                    
-                    Value = {selectedButton}
-                </Text> */}
-                <View style={styles.inputGroup}>
+                <View style={[styles.inputGroup, {width: this.state.width*0.7}]}>
                 <TextInput
-                    style={{ height: 40, width: 180, borderColor: 'gray', borderBottomWidth: 1 }}
+                    style={{  height: 40, marginBottom:20, borderColor: '#841584', borderBottomWidth: 1 }}
                     value={this.state.text}
                     onChangeText={val => this.updateInputState(val)}
                     placeholder={'Add a Word'}
                 />
 
                 <TextInput
-                    style={{ height: 40, width: 180, borderColor: 'gray', borderBottomWidth: 1 }}
+                    style={{ height: 40, borderColor: '#841584', borderBottomWidth: 1 }}
                     value={this.state.translation}
                     onChangeText={val => this.updateTranslationState(val)}
                     placeholder={'Add Translation..'}
@@ -136,7 +145,6 @@ export default class HomeComponent extends Component {
                     onPress={() => this.handleSubmit()}
                     title="Click To Add"
                     color="#841584"
-
                 />
             </ScrollView>
         );
@@ -155,6 +163,7 @@ const styles = StyleSheet.create({
     },
     inputGroup: {
         justifyContent:"space-between",
-        height: '20%'
+        height: '25%',
+        marginBottom:10
     }
 });
